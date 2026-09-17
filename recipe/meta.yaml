@@ -5,11 +5,11 @@ package:
 build:
   number: 13
   script:
-    - set -x  # [unix]
-    - cd {{ SP_DIR if SP_DIR is defined else '' }}
-    - mkdir ruamel && cd ruamel
-    - python -c "open('__init__.py', 'w').close()"
-    - cd {{ SRC_DIR if SRC_DIR is defined else '' }}
+    # conda-build derives SP_DIR from the platform alone, so on Windows it still
+    # says %PREFIX%\Lib\site-packages after 3.15 moved site-packages to
+    # %PREFIX%\lib\python\site-packages (conda-forge/python-feedstock#860).
+    # Ask sysconfig for the layout of the python being built against instead.
+    - python -c "import os,sysconfig;p=os.environ['PREFIX'];d=os.path.join(sysconfig.get_path('purelib',vars={'base':p,'platbase':p,'installed_base':p,'installed_platbase':p}),'ruamel');os.makedirs(d,exist_ok=True);open(os.path.join(d,'__init__.py'),'w').close()"
     - {{ PYTHON }} -c "import ruamel"   # [build_platform == target_platform]
 
 requirements:
